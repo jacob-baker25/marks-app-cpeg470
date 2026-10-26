@@ -52,6 +52,9 @@ app.get("/api/students/:id", requireUser, (req, res) => {
   const db = load();
   const student = db.users.find((row) => row.id === Number(req.params.id) && row.role === "student");
   if (!student) return res.status(404).json({ error: "No student with that id." });
+  if (req.claims.role !== "ta" && Number(req.claims.sub) !== student.id) {
+    return res.status(403).json({ error: "You can only view your own student record." });
+  }
   const grades = db.grades.filter((row) => row.student_id === student.id);
   res.json({ user: publicUser(student), grades });
 });
